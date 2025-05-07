@@ -69,13 +69,23 @@ router.post('/', async (req, res) => {
   }
 });
 
+const mongoose = require('mongoose');
+
 router.delete('/:id', async (req, res) => {
   try {
-    const form = await Form.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    const formId = req.params.id;
+
+    // Validate formId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(formId)) {
+      return res.status(400).json({ message: 'Invalid form ID' });
+    }
+
+    // Find and delete the form by ID and user ID
+    const form = await Form.findOneAndDelete({ _id: formId, user: req.user.id });
     if (!form) {
       return res.status(404).json({ message: 'Form not found or already deleted' });
     }
-    console.log(`Form with id ${req.params.id} deleted for user ${req.user.id}`);
+    console.log(`Form with id ${formId} deleted for user ${req.user.id}`);
     res.json({ message: 'Form deleted successfully' });
   } catch (err) {
     console.error('Error deleting form:', err);
